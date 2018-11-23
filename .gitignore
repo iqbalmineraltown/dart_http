@@ -1,0 +1,4 @@
+.packages
+.vscode/*
+android/app/src/main/java/io/flutter/plugins/Generated*
+ios/Runner/Generated*
