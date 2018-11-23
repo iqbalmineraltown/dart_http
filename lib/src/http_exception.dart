@@ -1,3 +1,5 @@
+import 'package:http/http.dart';
+
 class BaseException implements Exception {
   final String message;
 
@@ -10,8 +12,8 @@ class BaseException implements Exception {
 }
 
 class NonSuccessResponseException extends BaseException {
-  int statusCode;
-  NonSuccessResponseException(this.statusCode, {String message})
+  Response response;
+  NonSuccessResponseException(this.response, {String message})
       : super(message: message);
 }
 

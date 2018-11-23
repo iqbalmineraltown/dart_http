@@ -1,8 +1,7 @@
-import 'dart:convert';
-
+import 'package:dart_http/dart_http.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:flutter_http/src/http_exception.dart';
+import 'package:dart_http/src/http_exception.dart';
 
 /// HTTP Request method as enum for integrity
 enum HTTPMethod {
@@ -19,11 +18,12 @@ class HTTPRequest {
   static int requestId = 0;
   var client = http.Client();
 
-  Future<Map> sendRequest(HTTPMethod requestMethod, String absolutePath,
+  Future<http.Response> sendRequest(
+      HTTPMethod requestMethod, String absolutePath,
       {dynamic body,
-      Map<String, String> params,
-      Map<String, String> headers,
-      int timeout = 20}) async {
+      Map<String, dynamic> params,
+      Map<String, dynamic> headers,
+      Duration timeout = const Duration(seconds: 20)}) async {
     assert(requestMethod != HTTPMethod.post ||
         (requestMethod == HTTPMethod.post &&
             body != null &&
@@ -65,8 +65,8 @@ class HTTPRequest {
     _preRequestLog(currentRequestId, timer,
         "[$currentRequestId] > $httpMethod ${uri.toString()}");
 
-    var req = await client.send(request).timeout(Duration(seconds: timeout),
-        onTimeout: () {
+    var req = await client.send(request).timeout(timeout, onTimeout: () {
+      client.close();
       _postResponseLog(currentRequestId, timer,
           "[$currentRequestId] < Timeout after ${timeout}s!");
       throw RequestTimeoutException(message: "Timeout Limit Exceeded");
@@ -78,12 +78,11 @@ class HTTPRequest {
         "[$currentRequestId] < ${response.statusCode} ${response.body}");
 
     if (response.statusCode >= minimumNonSuccessCode) {
-      throw NonSuccessResponseException(response.statusCode,
+      throw NonSuccessResponseException(response,
           message:
               "Status Code ${response.statusCode} with message: ${response.body}");
     }
-
-    return json.decode(response.body);
+    return response;
   }
 
   void _preRequestLog(int requestId, Stopwatch timer, String logMessage) {
