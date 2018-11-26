@@ -1,4 +1,4 @@
-import 'package:http/http.dart';
+import 'package:http/http.dart' show Response;
 
 class BaseException implements Exception {
   final String message;

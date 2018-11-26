@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dart_http/dart_http.dart';
 import 'package:http/http.dart' as http;
 
@@ -15,7 +17,7 @@ enum HTTPMethod {
 const int minimumNonSuccessCode = 400;
 
 class HTTPRequest {
-  static int requestId = 0;
+  static int _requestId = 0;
   var client = http.Client();
 
   Future<http.Response> sendRequest(
@@ -23,6 +25,7 @@ class HTTPRequest {
       {dynamic body,
       Map<String, dynamic> params,
       Map<String, dynamic> headers,
+      bool isUrlEncoded = false,
       Duration timeout = const Duration(seconds: 20)}) async {
     assert(requestMethod != HTTPMethod.post ||
         (requestMethod == HTTPMethod.post &&
@@ -39,13 +42,20 @@ class HTTPRequest {
       queryParameters: params,
     );
 
-    if (headers == null) {
-      headers = Map<String, String>();
-    }
-    headers['Content-Type'] = 'application/json';
-
     var request = http.Request(httpMethod, uri);
+    request.headers['Content-Type'] = 'application/json';
+
+    if (headers != null) {
+      headers.forEach((key, value) => () {
+            request.headers[key] = value;
+          });
+    }
+
     if (body != null) {
+      if (!isUrlEncoded) {
+        body = json.encoder.convert(body);
+      }
+
       if (body is String) {
         request.body = body;
       } else if (body is List) {
@@ -61,7 +71,7 @@ class HTTPRequest {
     }
 
     var timer = Stopwatch();
-    var currentRequestId = requestId++;
+    var currentRequestId = _requestId++;
     _preRequestLog(currentRequestId, timer,
         "[$currentRequestId] > $httpMethod ${uri.toString()}");
 
