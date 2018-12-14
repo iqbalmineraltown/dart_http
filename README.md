@@ -34,7 +34,7 @@ var response = await sendRequest(HTTPMethod.get, "http://localhost/items", heade
 
 ### Timeout
 
-This will throw `RequestTimeoutException` if response not received within 10 seconds
+This will throw `RequestTimeoutException` if response not received within timeout. Default to 20 seconds
 
 ```dart
 var response = await sendRequest(HTTPMethod.get, "http://localhost/items", timeout: Duration(seconds: 10));

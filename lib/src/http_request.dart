@@ -13,9 +13,6 @@ enum HTTPMethod {
   put,
 }
 
-/// lower limit for throwing error code
-const int minimumNonSuccessCode = 400;
-
 class HTTPRequest {
   static int _requestId = 0;
   var client = http.Client();
@@ -76,7 +73,6 @@ class HTTPRequest {
         "[$currentRequestId] > $httpMethod ${uri.toString()}");
 
     var req = await client.send(request).timeout(timeout, onTimeout: () {
-      client.close();
       _postResponseLog(currentRequestId, timer,
           "[$currentRequestId] < Timeout after ${timeout}s!");
       throw RequestTimeoutException(message: "Timeout Limit Exceeded");
@@ -87,11 +83,6 @@ class HTTPRequest {
     _postResponseLog(currentRequestId, timer,
         "[$currentRequestId] < ${response.statusCode} ${response.body}");
 
-    if (response.statusCode >= minimumNonSuccessCode) {
-      throw NonSuccessResponseException(response,
-          message:
-              "Status Code ${response.statusCode} with message: ${response.body}");
-    }
     return response;
   }
 
@@ -111,9 +102,5 @@ class HTTPRequest {
       print("[$requestId] < Took ${elapsedMiliseconds}ms");
       return true;
     }());
-  }
-
-  void close() {
-    client.close();
   }
 }
