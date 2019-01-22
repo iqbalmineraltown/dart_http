@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dart_http/dart_http.dart';
@@ -43,9 +44,11 @@ class HTTPRequest {
     request.headers['Content-Type'] = 'application/json';
 
     if (headers != null) {
-      headers.forEach((key, value) => () {
-            request.headers[key] = value;
-          });
+      headers.forEach(
+        (key, value) => () {
+              request.headers[key] = value;
+            },
+      );
     }
 
     if (body != null) {
